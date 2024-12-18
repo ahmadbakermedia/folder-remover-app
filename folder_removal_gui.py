@@ -43,24 +43,24 @@ class FolderRemoverApp:
         else:
             self.status_label.config(text="No path selected", fg="red")
 
-    def search_fcpbundle(self, directory):
-        """Recursively searches for .fcpbundle files and their contents."""
+    def search_packages(self, directory):
+        """Recursively searches for folders within packages (files that behave like directories)."""
         for root_dir, dirs, files in os.walk(directory):
             for item in dirs:
-                if item.endswith(".fcpbundle"):
-                    bundle_path = os.path.join(root_dir, item)
-                    for inner_root, inner_dirs, _ in os.walk(bundle_path):
+                if item.endswith(".fcpbundle") or item.endswith(".pkg") or item.endswith(".app"):
+                    package_path = os.path.join(root_dir, item)
+                    for inner_root, inner_dirs, _ in os.walk(package_path):
                         for folder_name in inner_dirs:
                             if folder_name in self.folders_to_remove:
                                 folder_path = os.path.join(inner_root, folder_name)
                                 try:
                                     shutil.rmtree(folder_path)
                                     self.removed_folders.append(folder_path)
-                                except Exception as e:
-                                    messagebox.showerror("Error", f"Failed to remove {folder_path}: {e}")
+                                except Exception:
+                                    pass  # Silently handle errors
 
     def remove_folders(self):
-        """Searches for and removes specified folders in the selected directory and inside .fcpbundle files."""
+        """Searches for and removes specified folders in the selected directory and inside packages."""
         if not self.selected_path:
             messagebox.showerror("Error", "Please select a location first.")
             return
@@ -75,19 +75,14 @@ class FolderRemoverApp:
                     try:
                         shutil.rmtree(folder_path)
                         self.removed_folders.append(folder_path)
-                    except Exception as e:
-                        messagebox.showerror("Error", f"Failed to remove {folder_path}: {e}")
+                    except Exception:
+                        pass  # Silently handle errors
         
-        # Search inside .fcpbundle files
-        self.search_fcpbundle(self.selected_path)
+        # Search inside .fcpbundle, .app, and .pkg packages
+        self.search_packages(self.selected_path)
 
-        if self.removed_folders:
-            self.status_label.config(text="Folders Removed Successfully", fg="green")
-            removed_folders_str = "\n".join(self.removed_folders)
-            messagebox.showinfo("Success", f"Removed the following folders:\n{removed_folders_str}")
-        else:
-            self.status_label.config(text="No folders found to remove", fg="blue")
-            messagebox.showinfo("Info", "No specified folders were found in the selected location or inside .fcpbundle files.")
+        self.status_label.config(text="Folders Removal Process Completed", fg="green")
+        messagebox.showinfo("Done", "Folders removal process is complete.")
 
 if __name__ == "__main__":
     root = tk.Tk()
