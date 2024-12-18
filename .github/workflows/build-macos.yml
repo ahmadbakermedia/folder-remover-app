@@ -25,10 +25,10 @@ jobs:
 
       - name: Build macOS app
         run: |
-          pyinstaller --onefile --windowed --name "Folder Remover" --icon=icon.icns folder_removal_gui.py
+          pyinstaller --onefile --windowed --name "Folder Remover" folder_removal_gui.py
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: macos-build
           path: dist/
